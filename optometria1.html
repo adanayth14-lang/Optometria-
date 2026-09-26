@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2457a7">
+<title>Optometría I | Calculadora de notas</title>
+<style>
+:root{--blue:#2457a7;--pale:#eaf2ff;--ink:#172033;--muted:#667085;--line:#dce3ee;--bg:#f5f7fb;--green:#18794e;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:760px;margin:auto;padding:18px 14px 40px}.hero{background:linear-gradient(135deg,#2457a7,#4b83d4);color:white;padding:22px;border-radius:22px;margin-bottom:16px}.hero h1{margin:0 0 6px;font-size:1.55rem}.hero p{margin:0;opacity:.9;font-size:.92rem}
+.card{background:white;border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 3px 14px #17203308}
+label{font-size:.85rem;font-weight:650;color:var(--muted);display:block;margin-bottom:6px}
+input{width:100%;min-width:0;border:1px solid #cbd5e1;border-radius:10px;padding:11px;font:inherit;background:white;color:var(--ink)}
+input:focus{outline:2px solid #9bbcf2;border-color:var(--blue)}
+.goal{display:flex;align-items:center;justify-content:space-between;gap:12px}.goal input{max-width:110px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:var(--pale);border-radius:14px;padding:13px}.stat span{font-size:.72rem;font-weight:750;color:#536987;display:block}.stat strong{display:block;font-size:1.65rem;margin:4px 0;color:var(--blue);font-variant-numeric:tabular-nums}.stat small{font-size:.78rem;color:var(--muted)}
+.status{padding:13px;border:1px solid var(--line);border-radius:12px;margin-top:12px;font-size:.92rem;line-height:1.45}.status.good{background:#ecfdf3;color:#166534}.status.bad{background:#fff1f0;color:#912018}
+h2{font-size:1.1rem;margin:0 0 12px}.hint{font-size:.84rem;color:var(--muted);line-height:1.45}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 66px 82px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #edf0f5}.row:last-child{border:0}.row .name{font-weight:650;font-size:.9rem}.row .weight{font-size:.82rem;color:var(--muted);margin-top:3px}.row input{text-align:center;padding:10px 5px}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}button{border:0;border-radius:12px;padding:12px 15px;font:inherit;font-weight:700;cursor:pointer;background:var(--blue);color:white}button.secondary{background:#edf2f8;color:#24334b}button.danger{background:#fff0ef;color:#a52a20}
+.footer{font-size:.78rem;color:var(--muted);text-align:center;margin:20px 0}
+@media(max-width:400px){main{padding:12px 10px}.card{padding:13px}.row{grid-template-columns:minmax(0,1fr) 56px 72px;gap:6px}.stat strong{font-size:1.4rem}}
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <h1>👁️ Optometría I</h1>
+    <p>Calculadora de notas · Tu progreso, claro y sin enredos.</p>
+  </header>
+  <section class="card">
+    <div class="goal"><div><strong>Mi meta final</strong><div class="hint">Nota objetivo sobre 100</div></div><input id="goal" type="number" min="0" max="100" value="71" aria-label="Meta final"></div>
+  </section>
+  <section class="card">
+    <div class="stats">
+      <div class="stat"><span>PUNTOS GANADOS</span><strong id="earned">0.00</strong><small>de los 100 finales</small></div>
+      <div class="stat"><span>PUNTOS DISPONIBLES</span><strong id="available">100.00</strong><small>Porcentaje no evaluado</small></div>
+      <div class="stat"><span>TE FALTA GANAR</span><strong id="needed">71.00</strong><small>Para llegar a tu meta</small></div>
+      <div class="stat"><span>PROMEDIO NECESARIO</span><strong id="average">71.00</strong><small>Sobre 100 en lo restante</small></div>
+    </div>
+    <div id="status" class="status">Ingresa tus notas para calcular tu progreso.</div>
+  </section>
+  <section class="card">
+    <h2>Notas por evaluación</h2>
+    <p class="hint">Cambia las ponderaciones si tu profesora las ajustó. Nota vacía = pendiente. Escribe 0 si ya recibiste un cero. Tus cambios se guardan en este navegador.</p>
+    <div class="row" style="border-bottom:2px solid var(--line);padding-top:0"><div><label>Evaluación</label></div><div><label style="text-align:center">Peso %</label></div><div><label style="text-align:center">Nota /100</label></div></div>
+    <div id="rows"></div>
+    <p id="sum" class="hint"></p>
+    <div class="actions">
+      <button id="add">＋ Agregar evaluación</button>
+      <button class="secondary" id="reset">Restaurar plantilla</button>
+      <button class="secondary" onclick="window.print()">Imprimir / Guardar PDF</button>
+    </div>
+  </section>
+  <p class="footer">Calculadora personal · Los datos se guardan en este dispositivo/navegador.</p>
+</main>
+<script>
+const defaults=[
+["Parcial I",11,"0"],["Parcial II",11,""],["Parcial III",11,""],
+["Congreso FCMC",3,"100"],
+["Quiz 1",1.5,"83"],["Quiz 2",1.5,"70"],["Quiz 3",1.5,""],["Quiz 4",1.5,""],["Quiz 5",1.5,""],["Quiz 6",1.5,""],
+["Optotipos",3,""],["Video de lensometría",3,""],["Historia de valoración corneal",2,""],["Retinoscopía",3,""],["Dibujo y explicación",2,""],["Día Mundial de la Visión",3,""],["FO / Enfermedades",2,""],["Iluminación",3,""],["Examen semestral",34,""]
+];
+let items;
+try{items=JSON.parse(localStorage.getItem("opti1_items"))||defaults.map(x=>({name:x[0],weight:x[1],grade:x[2]}));}catch(e){items=defaults.map(x=>({name:x[0],weight:x[1],grade:x[2]}))}
+let goal=localStorage.getItem("opti1_goal")||"71";
+document.getElementById("goal").value=goal;
+function save(){try{localStorage.setItem("opti1_items",JSON.stringify(items));localStorage.setItem("opti1_goal",goal)}catch(e){}}
+function render(){
+ const root=document.getElementById("rows");root.innerHTML="";
+ items.forEach((it,i)=>{
+  const row=document.createElement("div");row.className="row";
+  const name=document.createElement("div");
+  const nameInput=document.createElement("input");nameInput.value=it.name;nameInput.setAttribute("aria-label","Nombre de evaluación");nameInput.style.textAlign="left";nameInput.style.fontWeight="650";nameInput.style.padding="10px 8px";
+  nameInput.addEventListener("input",e=>{items[i].name=e.target.value;save()});
+  name.appendChild(nameInput);
+  const weight=document.createElement("input");weight.type="number";weight.min="0";weight.step="0.1";weight.value=it.weight;weight.setAttribute("aria-label","Ponderación porcentual");
+  weight.addEventListener("input",e=>{items[i].weight=e.target.value;save();calc()});
+  const grade=document.createElement("input");grade.type="number";grade.min="0";grade.max="100";grade.step="any";grade.placeholder="—";grade.value=it.grade;grade.setAttribute("aria-label","Nota de 0 a 100");
+  grade.addEventListener("input",e=>{items[i].grade=e.target.value;save();calc()});
+  row.append(name,weight,grade);root.appendChild(row);
+ });
+ calc();
+}
+function calc(){
+ goal=document.getElementById("goal").value;save();
+ const valid=items.filter(x=>String(x.grade).trim()!==""&&Number.isFinite(Number(x.grade))&&Number(x.grade)>=0&&Number(x.grade)<=100&&Number(x.weight)>0);
+ const earned=valid.reduce((s,x)=>s+Number(x.grade)*Number(x.weight)/100,0);
+ const used=valid.reduce((s,x)=>s+Number(x.weight),0);
+ const available=Math.max(0,100-used);
+ const need=Number(goal)-earned;
+ const avg=available>0?need/available*100:0;
+ document.getElementById("earned").textContent=earned.toFixed(2);
+ document.getElementById("available").textContent=available.toFixed(2);
+ document.getElementById("needed").textContent=Math.max(0,need).toFixed(2);
+ document.getElementById("average").textContent=available===0?"—":need<=0?"0.00":avg.toFixed(2);
+ const status=document.getElementById("status");
+ status.className="status";
+ if(need<=0){status.classList.add("good");status.textContent="¡Meta alcanzada! Ya acumulaste los puntos que necesitas."}
+ else if(available===0){status.classList.add("bad");status.textContent="No quedan evaluaciones pendientes. Tu nota calculada es "+earned.toFixed(2)+"."}
+ else if(need>available){status.classList.add("bad");status.textContent="Con lo que queda no alcanza esa meta. Tu máximo posible es "+(earned+available).toFixed(2)+" puntos finales."}
+ else{status.classList.add("good");status.textContent="Necesitas ganar "+need.toFixed(2)+" de los "+available.toFixed(2)+" puntos disponibles. Eso equivale a promediar "+avg.toFixed(2)+"/100 en lo pendiente."}
+ const sum=items.reduce((s,x)=>s+Number(x.weight||0),0);
+ document.getElementById("sum").textContent="Suma de ponderaciones: "+sum.toFixed(1)+"% (debe ser 100%).";
+ if(Math.abs(sum-100)>.01){document.getElementById("sum").style.color="var(--red)"}else{document.getElementById("sum").style.color="var(--green)"}
+}
+document.getElementById("goal").addEventListener("input",calc);
+document.getElementById("add").addEventListener("click",()=>{items.push({name:"Nueva evaluación",weight:0,grade:""});save();render()});
+document.getElementById("reset").addEventListener("click",()=>{if(confirm("¿Restaurar la plantilla y borrar los cambios guardados?")){items=defaults.map(x=>({name:x[0],weight:x[1],grade:x[2]}));goal="71";document.getElementById("goal").value=goal;save();render()}});
+render();
+</script>
+</body>
+</html>
